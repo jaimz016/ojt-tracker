@@ -1,0 +1,17 @@
+{
+  "name": "Professional OJT Tracker",
+  "short_name": "OJT Tracker",
+  "description": "Advanced Multi-User OJT Management System with Analytics",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2681/2681826.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
