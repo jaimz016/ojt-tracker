@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-User OJT Management System</title>
+    <title>Professional OJT Management System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -207,15 +207,37 @@
                         <input type="date" id="date" required class="w-full bg-transparent text-xl font-black text-white outline-none focus:text-orange-500 transition-colors">
                     </div>
                     <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800">
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Activity Type</label>
-                        <select id="category" required class="w-full bg-transparent text-lg font-black text-white outline-none focus:text-orange-500 transition-colors">
-                            <option value="Coding" class="bg-slate-900">Coding / Dev</option>
-                            <option value="Documentation" class="bg-slate-900">Documentation</option>
-                            <option value="Meetings" class="bg-slate-900">Meetings</option>
-                            <option value="Research" class="bg-slate-900">Research</option>
-                            <option value="Maintenance" class="bg-slate-900">Maintenance</option>
-                            <option value="Others" class="bg-slate-900">Others</option>
-                        </select>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Activity Types (Select Multiple)</label>
+                        <div id="categoryContainer" class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Coding" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Coding / Dev</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Documentation" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Documentation</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Meetings" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Meetings</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Research" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Research</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Activity" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Activity (Events)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Maintenance" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Maintenance</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-slate-900 rounded-xl transition-colors">
+                                <input type="checkbox" name="category" value="Others" class="w-4 h-4 accent-orange-500">
+                                <span class="text-xs font-bold text-slate-300">Others</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -245,7 +267,7 @@
 
                 <div class="bg-slate-950 p-6 rounded-3xl border border-slate-800">
                     <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Accomplishments</label>
-                    <textarea id="task" required rows="3" placeholder="What did you achieve today?" class="w-full bg-transparent text-white outline-none focus:text-orange-400 transition-colors font-medium"></textarea>
+                    <textarea id="task" required rows="3" autocomplete="off" placeholder="What did you achieve today?" class="w-full bg-transparent text-white outline-none focus:text-orange-400 transition-colors font-medium"></textarea>
                 </div>
 
                 <div class="flex gap-4">
@@ -355,7 +377,7 @@
             company: "Company Name",
             target: 486,
             logs: [],
-            lastEntry: { date: new Date().toISOString().split('T')[0], mTimeIn: "08:00", mTimeOut: "12:00", aTimeIn: "13:00", aTimeOut: "17:00", otTimeIn: "", otTimeOut: "", task: "", category: "Coding" }
+            lastEntry: { date: new Date().toISOString().split('T')[0], mTimeIn: "08:00", mTimeOut: "12:00", aTimeIn: "13:00", aTimeOut: "17:00", otTimeIn: "", otTimeOut: "", task: "", categories: ["Coding"] }
         }];
         
         let activeIdx = parseInt(localStorage.getItem('ojtActiveIdx_v4')) || 0;
@@ -403,7 +425,7 @@
 
             categoryChart = new Chart(ctxC, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f97316', '#06b6d4', '#8b5cf6', '#ec4899', '#10b981', '#64748b'], borderWeight: 0 }] },
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f97316', '#06b6d4', '#8b5cf6', '#ec4899', '#10b981', '#334155', '#64748b'], borderWeight: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } } }, cutout: '70%' }
             });
         }
@@ -425,8 +447,16 @@
             weeklyChart.update();
 
             // Category Chart Logic
-            const cats = ['Coding', 'Documentation', 'Meetings', 'Research', 'Maintenance', 'Others'];
-            const catData = cats.map(c => p.logs.filter(l => l.category === c).reduce((sum, l) => sum + l.duration, 0));
+            const cats = ['Coding', 'Documentation', 'Meetings', 'Research', 'Activity', 'Maintenance', 'Others'];
+            const catData = cats.map(c => {
+                return p.logs.reduce((sum, l) => {
+                    const lCats = l.categories || [l.category];
+                    if (lCats.includes(c)) {
+                        return sum + (l.duration / lCats.length);
+                    }
+                    return sum;
+                }, 0);
+            });
             categoryChart.data.labels = cats;
             categoryChart.data.datasets[0].data = catData;
             categoryChart.update();
@@ -507,7 +537,7 @@
             if (!name || !target) { alert("Please enter name and goal."); return; }
             profiles.push({ 
                 id: Date.now(), name, company, target, logs: [], 
-                lastEntry: { date: new Date().toISOString().split('T')[0], mTimeIn: "08:00", mTimeOut: "12:00", aTimeIn: "13:00", aTimeOut: "17:00", otTimeIn: "", otTimeOut: "", task: "", category: "Coding" } 
+                lastEntry: { date: new Date().toISOString().split('T')[0], mTimeIn: "08:00", mTimeOut: "12:00", aTimeIn: "13:00", aTimeOut: "17:00", otTimeIn: "", otTimeOut: "", task: "", categories: ["Coding"] } 
             });
             activeIdx = profiles.length - 1;
             saveAll();
@@ -546,6 +576,21 @@
 
         function closeTraineeModal() { document.getElementById('traineeModal').classList.add('hidden'); }
 
+        function calculateWorkingDays(startDate, endDate) {
+            let count = 0;
+            let cur = new Date(startDate);
+            const end = new Date(endDate);
+            const holidays = ['2026-01-01', '2026-04-02', '2026-04-03', '2026-05-01', '2026-06-12', '2026-12-25', '2026-12-30', '2026-12-31'];
+            
+            while (cur <= end) {
+                const day = cur.getDay();
+                const dateStr = cur.toISOString().split('T')[0];
+                if (day !== 0 && day !== 6 && !holidays.includes(dateStr)) count++;
+                cur.setDate(cur.getDate() + 1);
+            }
+            return count;
+        }
+
         function renderTable() {
             const p = profiles[activeIdx];
             const tbody = document.getElementById('logTableBody');
@@ -553,9 +598,18 @@
             const month = document.getElementById('monthFilter').value;
             tbody.innerHTML = '';
 
+            // 1. Sort ALL logs chronologically to assign stable Day numbers
+            const chronLogs = [...p.logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const dayMap = new Map();
+            chronLogs.forEach((l, idx) => {
+                dayMap.set(l.date + l.task, idx + 1); // Use date+task as a unique key
+            });
+
             let filtered = p.logs.map((l, i) => ({ ...l, oid: i }))
                 .filter(l => {
-                    const mS = l.task.toLowerCase().includes(search) || l.date.includes(search) || (l.category && l.category.toLowerCase().includes(search));
+                    const lCats = l.categories || [l.category];
+                    const catStr = lCats.join(', ');
+                    const mS = l.task.toLowerCase().includes(search) || l.date.includes(search) || catStr.toLowerCase().includes(search);
                     const mM = month === 'all' || new Date(l.date).getMonth().toString() === month;
                     return mS && mM;
                 });
@@ -567,15 +621,26 @@
             filtered.forEach(l => {
                 const row = document.createElement('tr');
                 row.className = "hover:bg-slate-900/40 border-b border-slate-900 group transition-all";
+                const lCats = l.categories || [l.category];
+                
+                // Day Badge based on chronological position in logs
+                const dayCount = dayMap.get(l.date + l.task);
+                const dayBadge = dayCount ? `<span class="ml-2 bg-slate-800 text-slate-400 text-[9px] px-2 py-0.5 rounded-md border border-slate-700 font-black">DAY ${dayCount}</span>` : '';
+
                 row.innerHTML = `
-                    <td class="px-8 py-5 font-bold text-white text-sm whitespace-nowrap">${new Date(l.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td class="px-8 py-5 font-bold text-white text-sm whitespace-nowrap">
+                        <div class="flex items-center">
+                            ${new Date(l.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            ${dayBadge}
+                        </div>
+                    </td>
                     <td class="px-6 py-5 text-slate-400 text-xs font-mono">${l.mTimeIn||'--'}-${l.mTimeOut||'--'}</td>
                     <td class="px-6 py-5 text-slate-400 text-xs font-mono">${l.aTimeIn||'--'}-${l.aTimeOut||'--'}</td>
                     <td class="px-6 py-5 text-center"><span class="bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full text-[10px] font-black ring-1 ring-orange-500/20">${l.duration.toFixed(1)}h</span></td>
                     <td class="px-6 py-5">
                         <div class="flex flex-col">
                             <span class="text-slate-300 text-sm font-medium truncate max-w-[200px]">${l.task}</span>
-                            <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">${l.category || 'Others'}</span>
+                            <span class="text-[9px] font-black uppercase text-slate-500 tracking-widest">${lCats.join(', ')}</span>
                         </div>
                     </td>
                     <td class="px-8 py-5 text-right opacity-0 group-hover:opacity-100 transition-opacity">
@@ -589,9 +654,31 @@
         function openModal() {
             const p = profiles[activeIdx];
             document.getElementById('editIndex').value = "-1";
-            document.getElementById('logForm').reset();
+            const form = document.getElementById('logForm');
+            form.reset();
             document.getElementById('modalTitle').innerText = "Daily Record";
-            Object.keys(p.lastEntry).forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = p.lastEntry[k]; });
+            
+            // 1. Set Date to TODAY (Local Time)
+            const today = new Date();
+            const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            document.getElementById('date').value = dateStr;
+
+            // 2. Set Accomplishments with Day Badge (Based on CURRENT LOG COUNT + 1)
+            const nextDayNumber = p.logs.length + 1;
+            document.getElementById('task').value = `[Day ${nextDayNumber}] `; 
+
+            // 3. Clear all Activity Checkboxes
+            const cbs = document.querySelectorAll('input[name="category"]');
+            cbs.forEach(cb => cb.checked = false);
+
+            // 4. Fill ONLY previous times for convenience (skip everything else)
+            const timeFields = ['mTimeIn', 'mTimeOut', 'aTimeIn', 'aTimeOut', 'otTimeIn', 'otTimeOut'];
+            timeFields.forEach(k => {
+                if (p.lastEntry[k] && document.getElementById(k)) {
+                    document.getElementById(k).value = p.lastEntry[k];
+                }
+            });
+
             document.getElementById('entryModal').classList.remove('hidden');
         }
 
@@ -601,7 +688,14 @@
             const l = profiles[activeIdx].logs[idx];
             document.getElementById('editIndex').value = idx;
             document.getElementById('modalTitle').innerText = "Update Record";
-            Object.keys(l).forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = l[k]; });
+            Object.keys(l).forEach(k => { 
+                if(document.getElementById(k)) document.getElementById(k).value = l[k]; 
+            });
+            // Set checkboxes
+            const cbs = document.querySelectorAll('input[name="category"]');
+            const itemCats = l.categories || [l.category];
+            cbs.forEach(cb => cb.checked = itemCats.includes(cb.value));
+
             document.getElementById('entryModal').classList.remove('hidden');
         }
 
@@ -617,7 +711,8 @@
             document.getElementById('pdfGeneratedDate').innerText = new Date().toLocaleString();
             const tbody = document.getElementById('pdfTableBody'); tbody.innerHTML = '';
             [...p.logs].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(l => {
-                tbody.innerHTML += `<tr><td>${l.date}</td><td>${l.mTimeIn||'--'}-${l.mTimeOut||'--'}</td><td>${l.aTimeIn||'--'}-${l.aTimeOut||'--'}</td><td>${l.otTimeIn||'--'}-${l.otTimeOut||'--'}</td><td style="text-align:center; font-weight:bold;">${l.duration.toFixed(1)}</td><td>[${l.category}] ${l.task}</td></tr>`;
+                const lCats = l.categories || [l.category];
+                tbody.innerHTML += `<tr><td>${l.date}</td><td>${l.mTimeIn||'--'}-${l.mTimeOut||'--'}</td><td>${l.aTimeIn||'--'}-${l.aTimeOut||'--'}</td><td>${l.otTimeIn||'--'}-${l.otTimeOut||'--'}</td><td style="text-align:center; font-weight:bold;">${l.duration.toFixed(1)}</td><td>[${lCats.join(', ')}] ${l.task}</td></tr>`;
             });
             const element = document.getElementById('pdf-template').cloneNode(true);
             element.style.display = 'block';
@@ -644,10 +739,14 @@
             const highlights = document.getElementById('sumHighlights'); highlights.innerHTML = '';
             monthLogs.slice(0, 8).forEach(l => highlights.innerHTML += `<li>${l.date}: ${l.task}</li>`);
 
-            const cats = ['Coding', 'Documentation', 'Meetings', 'Research', 'Maintenance', 'Others'];
+            const cats = ['Coding', 'Documentation', 'Meetings', 'Research', 'Activity', 'Maintenance', 'Others'];
             const catSummary = document.getElementById('sumCategories'); catSummary.innerHTML = '';
             cats.forEach(c => {
-                const hours = monthLogs.filter(l => l.category === c).reduce((s, l) => s + l.duration, 0);
+                const hours = monthLogs.reduce((sum, l) => {
+                    const lCats = l.categories || [l.category];
+                    if (lCats.includes(c)) return sum + (l.duration / lCats.length);
+                    return sum;
+                }, 0);
                 if (hours > 0) catSummary.innerHTML += `<p>${c}: <strong>${hours.toFixed(1)} hrs</strong></p>`;
             });
 
@@ -680,9 +779,13 @@
             e.preventDefault();
             const p = profiles[activeIdx];
             const editIdx = parseInt(document.getElementById('editIndex').value);
+            
+            const selectedCats = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(cb => cb.value);
+            if (selectedCats.length === 0) { alert("Please select at least one Activity Type."); return; }
+
             const data = { 
                 date: document.getElementById('date').value,
-                category: document.getElementById('category').value,
+                categories: selectedCats,
                 mTimeIn: document.getElementById('mTimeIn').value, mTimeOut: document.getElementById('mTimeOut').value,
                 aTimeIn: document.getElementById('aTimeIn').value, aTimeOut: document.getElementById('aTimeOut').value,
                 otTimeIn: document.getElementById('otTimeIn').value, otTimeOut: document.getElementById('otTimeOut').value,
