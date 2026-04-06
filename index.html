@@ -32,6 +32,13 @@
             .card-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        @keyframes celebration-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .celebrate-dance { animation: celebration-pulse 0.8s infinite ease-in-out; }
         
         /* PDF specific styling */
         #pdf-template, #monthly-summary-template { display: none; }
@@ -474,6 +481,35 @@
         <span id="toastMsg">Success!</span>
     </div>
 
+    <!-- MODAL: Completion Celebration -->
+    <div id="completionModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 z-[100] hidden transition-all duration-500 scale-95 opacity-0">
+        <div class="bg-slate-900 border border-orange-500/30 w-full max-w-lg rounded-[3rem] shadow-[0_0_100px_rgba(249,115,22,0.15)] relative overflow-hidden text-center p-12">
+            <div class="absolute -top-24 -left-24 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px]"></div>
+            <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px]"></div>
+            
+            <div class="relative">
+                <div class="w-24 h-24 bg-gradient-to-tr from-orange-600 to-orange-400 rounded-3xl mx-auto mb-8 flex items-center justify-center rotate-12 shadow-2xl shadow-orange-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white -rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                </div>
+
+                <h2 class="text-4xl font-black text-white tracking-tighter mb-4 leading-tight">Requirement<br><span class="text-orange-500 underline decoration-orange-500/30 underline-offset-8">Fulfilled!</span></h2>
+                <p class="text-slate-400 text-sm font-medium leading-relaxed mb-10 px-4">
+                    Congratulations! You have officially completed your OJT requirements. Your hard work and dedication have truly paid off, and a bright professional future awaits you!
+                </p>
+
+                <button onclick="closeCompletionModal()" class="w-full bg-white text-black font-black uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-orange-500 hover:text-white transition-all shadow-xl active:scale-95 text-xs">
+                    Claim Your Success
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sound Effects -->
+    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-happy-ending-135.mp3" preload="auto" loop></audio>
+
     <script>
         // --- CORE STATE ---
         let weeklyChart = null;
@@ -490,6 +526,20 @@
         
         let activeIdx = parseInt(localStorage.getItem('ojtActiveIdx_v4')) || 0;
         if (activeIdx >= profiles.length) activeIdx = 0;
+
+        function closeCompletionModal() {
+            const m = document.getElementById('completionModal');
+            m.classList.add('scale-95', 'opacity-0');
+            
+            // Stop Music
+            const music = document.getElementById('bgMusic');
+            if(music) {
+                music.pause();
+                music.currentTime = 0;
+            }
+
+            setTimeout(() => m.classList.add('hidden'), 500);
+        }
 
         // PWA Registration
         if ('serviceWorker' in navigator) {
@@ -622,10 +672,68 @@
             } else { finishEl.innerText = remaining === 0 ? "DONE" : "---"; paceEl.innerText = "Insufficient data."; }
 
             const statusEl = document.getElementById('statStatus');
-            if (percent >= 100) statusEl.innerText = "Requirement Fulfilled";
-            else if (percent > 75) statusEl.innerText = "Final Phase";
-            else if (percent > 25) statusEl.innerText = "Steady Progress";
-            else statusEl.innerText = "Getting Started";
+            if (percent >= 100) {
+                statusEl.innerText = "Requirement Fulfilled";
+                if (!p.completedNotified) {
+                    p.completedNotified = true;
+                    localStorage.setItem('ojtProfiles_v4', JSON.stringify(profiles));
+                    
+                    // Sound Play Logic
+                    const sound = document.getElementById('successSound');
+                    const music = document.getElementById('bgMusic');
+                    
+                    const playAudio = async (el) => {
+                        if (!el) return;
+                        try {
+                            el.volume = 0.5;
+                            await el.play();
+                        } catch (err) {
+                            const resume = () => { el.play().catch(e=>{}); document.removeEventListener('click', resume); };
+                            document.addEventListener('click', resume);
+                        }
+                    };
+                    
+                    playAudio(sound);
+                    playAudio(music);
+                    
+                    // Modal Trigger
+                    const m = document.getElementById('completionModal');
+                    const mContent = m.querySelector('div');
+                    mContent.classList.add('celebrate-dance');
+                    m.classList.remove('hidden');
+                    setTimeout(() => {
+                        m.classList.remove('scale-95', 'opacity-0');
+                    }, 100);
+
+                    // Multi-burst Confetti
+                    const duration = 6 * 1000;
+                    const animationEnd = Date.now() + duration;
+                    const defaults = { startVelocity: 40, spread: 360, ticks: 100, zIndex: 200 };
+
+                    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+                    const interval = setInterval(function() {
+                        const timeLeft = animationEnd - Date.now();
+
+                        if (timeLeft <= 0) {
+                            return clearInterval(interval);
+                        }
+
+                        const particleCount = 60 * (timeLeft / duration);
+                        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                    }, 300);
+                }
+            }
+            else {
+                if (p.completedNotified) {
+                    p.completedNotified = false;
+                    localStorage.setItem('ojtProfiles_v4', JSON.stringify(profiles));
+                }
+                if (percent > 75) statusEl.innerText = "Final Phase";
+                else if (percent > 25) statusEl.innerText = "Steady Progress";
+                else statusEl.innerText = "Getting Started";
+            }
 
             renderSwitcher();
             renderTable();
