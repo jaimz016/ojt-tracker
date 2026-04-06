@@ -597,14 +597,24 @@
             const paceEl = document.getElementById('statPaceMessage');
             if (avg > 0 && remaining > 0) {
                 const workingDaysNeeded = Math.ceil(remaining / avg);
+                
+                // Start calculation from today or the last logged date, whichever is later
                 let d = new Date();
+                if (p.logs.length > 0) {
+                    const latestLogStr = p.logs.reduce((max, log) => log.date > max ? log.date : max, "0000-00-00");
+                    const [y, m, dayPart] = latestLogStr.split('-').map(Number);
+                    const latestLogDate = new Date(y, m - 1, dayPart);
+                    if (latestLogDate > d) d = new Date(latestLogDate);
+                }
+
                 let count = 0;
                 const holidays = ['2026-01-01', '2026-04-02', '2026-04-03', '2026-05-01', '2026-06-12', '2026-12-25', '2026-12-30', '2026-12-31']; 
                 
                 while (count < workingDaysNeeded) {
                     d.setDate(d.getDate() + 1);
                     const day = d.getDay();
-                    const dateStr = d.toISOString().split('T')[0];
+                    // Use local date string for holiday check
+                    const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                     if (day !== 0 && day !== 6 && !holidays.includes(dateStr)) count++;
                 }
                 finishEl.innerText = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -651,7 +661,7 @@
             if (!name || !target) { alert("Please enter name and goal."); return; }
             profiles.push({ 
                 id: Date.now(), name, company, target, logs: [], 
-                lastEntry: { date: new Date().toISOString().split('T')[0], mTimeIn: "08:00", mTimeOut: "12:00", aTimeIn: "13:00", aTimeOut: "17:00", otTimeIn: "", otTimeOut: "", task: "", categories: ["Coding"] } 
+                lastEntry: { date: new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0'), mTimeIn: "08:00", mTimeOut: "12:00", aTimeIn: "13:00", aTimeOut: "17:00", otTimeIn: "", otTimeOut: "", task: "", categories: ["Coding"] } 
             });
             activeIdx = profiles.length - 1;
             saveAll();
@@ -692,13 +702,16 @@
 
         function calculateWorkingDays(startDate, endDate) {
             let count = 0;
-            let cur = new Date(startDate);
-            const end = new Date(endDate);
+            // Parse as local dates
+            const [sy, sm, sd] = startDate.split('-').map(Number);
+            const [ey, em, ed] = endDate.split('-').map(Number);
+            let cur = new Date(sy, sm - 1, sd);
+            const end = new Date(ey, em - 1, ed);
             const holidays = ['2026-01-01', '2026-04-02', '2026-04-03', '2026-05-01', '2026-06-12', '2026-12-25', '2026-12-30', '2026-12-31'];
             
             while (cur <= end) {
                 const day = cur.getDay();
-                const dateStr = cur.toISOString().split('T')[0];
+                const dateStr = cur.getFullYear() + '-' + String(cur.getMonth() + 1).padStart(2, '0') + '-' + String(cur.getDate()).padStart(2, '0');
                 if (day !== 0 && day !== 6 && !holidays.includes(dateStr)) count++;
                 cur.setDate(cur.getDate() + 1);
             }
