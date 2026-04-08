@@ -417,30 +417,52 @@
 
     <!-- Hidden PDF Template (Monthly Summary) -->
     <div id="monthly-summary-template">
-        <div class="pdf-page">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="font-size: 24px; font-weight: bold; color: #000; letter-spacing: -1px;">MONTHLY PROGRESS SUMMARY</h1>
-                <p style="font-size: 14px; color: #333; text-transform: uppercase; font-weight: bold;" id="reportMonthYear"></p>
+        <div class="pdf-page" style="padding: 0.75in; font-family: Arial, sans-serif; color: #000; background: #fff; width: 7.2in; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 0.2in;">
+                <h1 style="font-size: 14pt; font-weight: bold; margin: 0; line-height: 1.2;">DAILY LOG OF ACTIVITIES</h1>
+                <p style="font-size: 12pt; margin: 0; line-height: 1.2;"><span style="text-decoration: underline;">2nd</span> Semester, S/Y 2025 – 2026</p>
             </div>
             
-            <div style="border: 2px solid #000; padding: 15px; margin-bottom: 25px;">
-                <p><strong>TRAINEE:</strong> <span id="sumName"></span></p>
-                <p><strong>MONTH TOTAL:</strong> <span id="sumMonthTotal"></span></p>
-                <p><strong>OVERALL PROGRESS:</strong> <span id="sumOverall"></span></p>
+            <div style="margin-bottom: 0.1in;">
+                <p style="font-size: 12pt; margin: 0;">Month: <span id="sumMonthName" style="text-decoration: underline; font-weight: bold;"></span></p>
             </div>
 
-            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">ACTIVITY HIGHLIGHTS:</h3>
-            <ul id="sumHighlights" style="font-size: 12px; margin-bottom: 25px; line-height: 1.6;"></ul>
+            <table style="width: 100%; border-collapse: collapse; border: 1.5pt solid #000; table-layout: fixed;">
+                <thead>
+                    <tr style="text-align: center; font-weight: bold; font-size: 9pt;">
+                        <th rowspan="2" style="border: 1pt solid #000; padding: 4pt; width: 16%;">DATE</th>
+                        <th colspan="2" style="border: 1pt solid #000; padding: 4pt; width: 14%;">AM</th>
+                        <th colspan="2" style="border: 1pt solid #000; padding: 4pt; width: 14%;">PM</th>
+                        <th rowspan="2" style="border: 1pt solid #000; padding: 4pt; width: 10%;">TOTAL HOURS</th>
+                        <th rowspan="2" style="border: 1pt solid #000; padding: 4pt; width: 31%;">NATURE OF WORK / ACCOMPLISHMENTS</th>
+                        <th rowspan="2" style="border: 1pt solid #000; padding: 4pt; width: 15%;">REMARKS</th>
+                    </tr>
+                    <tr style="text-align: center; font-weight: bold; font-size: 8pt;">
+                        <th style="border: 1pt solid #000; padding: 2pt;">IN</th>
+                        <th style="border: 1pt solid #000; padding: 2pt;">OUT</th>
+                        <th style="border: 1pt solid #000; padding: 2pt;">IN</th>
+                        <th style="border: 1pt solid #000; padding: 2pt;">OUT</th>
+                    </tr>
+                </thead>
+                <tbody id="sumTableBody" style="font-size: 8.5pt;">
+                    <!-- Rows injected here -->
+                </tbody>
+            </table>
 
-            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">HOURS PER CATEGORY:</h3>
-            <div id="sumCategories" style="font-size: 12px; margin-bottom: 30px;"></div>
-
-            <div style="margin-top: 80px; display: flex; justify-content: space-between; padding: 0 40px;">
-                <div class="signature-line">
-                    <p><strong>TRAINEE</strong></p>
+            <div style="margin-top: 0.6in; display: flex; justify-content: space-between; font-size: 11pt;">
+                <div style="width: 48%;">
+                    <p style="margin-bottom: 0.4in;">Submitted by:</p>
+                    <div style="text-align: center;">
+                        <p style="margin: 0; font-weight: bold; text-decoration: underline;" id="sumInternName"></p>
+                        <p style="margin: 0; font-style: italic; font-size: 11pt;">Intern’s Signature Over Printed Name</p>
+                    </div>
                 </div>
-                <div class="signature-line">
-                    <p><strong>SUPERVISOR</strong></p>
+                <div style="width: 48%;">
+                    <p style="margin-bottom: 0.4in;">Noted:</p>
+                    <div style="text-align: center;">
+                        <div style="margin: 0; border-bottom: 1pt solid #000; min-height: 1.2em; width: 100%;"></div>
+                        <p style="margin: 0; font-style: italic; font-size: 11pt;">Supervisor’s Signature Over Printed Name</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1054,32 +1076,51 @@
             const monthLogs = p.logs.filter(l => new Date(l.date).getMonth().toString() === filterMonth);
             if (monthLogs.length === 0) { alert("No records found for the selected month."); return; }
 
-            const monthTotal = monthLogs.reduce((s, l) => s + l.duration, 0);
-            const overallTotal = p.logs.reduce((s, l) => s + l.duration, 0);
             const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date(2000, filterMonth));
 
-            document.getElementById('reportMonthYear').innerText = `${monthName} Summary Report`;
-            document.getElementById('sumName').innerText = p.name;
-            document.getElementById('sumMonthTotal').innerText = monthTotal.toFixed(1) + " hours";
-            document.getElementById('sumOverall').innerText = `${Math.round((overallTotal/p.target)*100)}% of ${p.target} hours goal`;
-
-            const highlights = document.getElementById('sumHighlights'); highlights.innerHTML = '';
-            monthLogs.slice(0, 8).forEach(l => highlights.innerHTML += `<li>${l.date}: ${l.task}</li>`);
-
-            const cats = ['Coding', 'Documentation', 'Meetings', 'Research', 'Activity', 'Work From Home', 'Training', 'Maintenance', 'Others'];
-            const catSummary = document.getElementById('sumCategories'); catSummary.innerHTML = '';
-            cats.forEach(c => {
-                const hours = monthLogs.reduce((sum, l) => {
-                    const lCats = l.categories || [l.category];
-                    if (lCats.includes(c)) return sum + (l.duration / lCats.length);
-                    return sum;
-                }, 0);
-                if (hours > 0) catSummary.innerHTML += `<p>${c}: <strong>${hours.toFixed(1)} hrs</strong></p>`;
+            // Populate Template Fields
+            document.getElementById('sumMonthName').innerText = monthName.toUpperCase();
+            document.getElementById('sumInternName').innerText = p.name.toUpperCase();
+            
+            const tbody = document.getElementById('sumTableBody');
+            tbody.innerHTML = '';
+            
+            // Sort logs by date ascending for the report
+            const sortedLogs = [...monthLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            sortedLogs.forEach(l => {
+                const lCats = l.categories || [l.category];
+                const tr = document.createElement('tr');
+                tr.style.textAlign = 'center';
+                
+                // Format Date: MM/DD/YYYY or similar
+                const logDate = new Date(l.date).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                
+                tr.innerHTML = `
+                    <td style="border: 1pt solid #000; padding: 5px;">${logDate}</td>
+                    <td style="border: 1pt solid #000; padding: 5px;">${l.mTimeIn || '--'}</td>
+                    <td style="border: 1pt solid #000; padding: 5px;">${l.mTimeOut || '--'}</td>
+                    <td style="border: 1pt solid #000; padding: 5px;">${l.aTimeIn || '--'}</td>
+                    <td style="border: 1pt solid #000; padding: 5px;">${l.aTimeOut || '--'}</td>
+                    <td style="border: 1pt solid #000; padding: 5px; font-weight: bold;">${l.duration.toFixed(1)}</td>
+                    <td style="border: 1pt solid #000; padding: 5px; text-align: left;">[${lCats.join(', ')}] ${l.task}</td>
+                    <td style="border: 1pt solid #000; padding: 5px;"></td>
+                `;
+                tbody.appendChild(tr);
             });
 
             const element = document.getElementById('monthly-summary-template').cloneNode(true);
             element.style.display = 'block';
-            html2pdf().set({ margin: 0.5, filename: `${p.name}_${monthName}_Summary.pdf`, jsPDF: { unit: 'in', format: 'letter' } }).from(element).save();
+            
+            const opt = {
+                margin: 0.3,
+                filename: `${p.name.replace(/\s+/g,'_')}_${monthName}_Daily_Log.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
         }
 
         function exportData() {
